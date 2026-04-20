@@ -1,4 +1,4 @@
-import { updateEnv, clearTokens } from "../storage.js";
+import { loadEnv, updateEnv, clearTokens } from "../storage.js";
 import { text, type Tool } from "./index.js";
 
 export const configure: Tool = {
@@ -25,12 +25,17 @@ export const configure: Tool = {
     if (!/^[a-z0-9.-]+$/i.test(instance)) {
       throw new Error(`Invalid instance hostname: ${instance}`);
     }
-    if (args.reset) {
+    const current = await loadEnv();
+    const instanceChanged = current.instance && current.instance !== instance;
+    if (args.reset || instanceChanged) {
       await clearTokens();
     }
     await updateEnv({ instance });
+    const note = instanceChanged
+      ? `Instance changed from ${current.instance} → ${instance}; cached tokens cleared.`
+      : `Instance: ${instance}`;
     return text(
-      `Configured. Instance: ${instance}\nCredentials will be stored at ~/.enneo/env (mode 600).\n\nThe next authenticated tool call will open a browser for OAuth login.`,
+      `Configured. ${note}\nCredentials will be stored at ~/.enneo/env (mode 600).\n\nThe next authenticated tool call will open a browser for OAuth login.`,
     );
   },
 };

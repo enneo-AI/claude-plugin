@@ -7,7 +7,9 @@ import { loadEnv, updateEnv, isExpired } from "../storage.js";
 // Public client ID baked into the plugin. PKCE provides the security —
 // a client secret would be useless in a distributed binary anyway.
 const CLIENT_ID = "enneo-claude-plugin";
-const SCOPES = "openid profile email offline_access";
+// Enneo's OAuth server issues refresh tokens on authorization_code unconditionally,
+// so offline_access is not required (and is not in the advertised scopes).
+const SCOPES = "openid profile email";
 
 /**
  * Get a valid access token for the given instance.

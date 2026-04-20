@@ -9,7 +9,7 @@ export interface AuthServerMetadata {
   scopes_supported?: string[];
 }
 
-let cache: Map<string, { metadata: AuthServerMetadata; fetchedAt: number }> = new Map();
+const cache = new Map<string, { metadata: AuthServerMetadata; fetchedAt: number }>();
 const TTL_MS = 5 * 60 * 1000;
 
 export async function discoverAuthServer(instance: string): Promise<AuthServerMetadata> {
@@ -18,34 +18,15 @@ export async function discoverAuthServer(instance: string): Promise<AuthServerMe
     return cached.metadata;
   }
 
-  // Try the standard well-known path first. If Enneo namespaces auth under /api/auth,
-  // fall back to that path.
-  const candidates = [
-    `https://${instance}/.well-known/oauth-authorization-server`,
-    `https://${instance}/api/auth/.well-known/oauth-authorization-server`,
-  ];
-
-  let lastErr: unknown = null;
-  for (const url of candidates) {
-    try {
-      const res = await fetch(url, { headers: { Accept: "application/json" } });
-      if (!res.ok) {
-        lastErr = new Error(`HTTP ${res.status} from ${url}`);
-        continue;
-      }
-      const metadata = (await res.json()) as AuthServerMetadata;
-      if (!metadata.authorization_endpoint || !metadata.token_endpoint) {
-        lastErr = new Error(`Metadata at ${url} missing authorization_endpoint or token_endpoint`);
-        continue;
-      }
-      cache.set(instance, { metadata, fetchedAt: Date.now() });
-      return metadata;
-    } catch (err) {
-      lastErr = err;
-    }
+  const url = `https://${instance}/.well-known/openid-configuration`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    throw new Error(`OIDC discovery failed: HTTP ${res.status} from ${url}`);
   }
-
-  throw new Error(
-    `Could not discover OAuth metadata for ${instance}. Tried ${candidates.join(", ")}. Last error: ${lastErr instanceof Error ? lastErr.message : String(lastErr)}`,
-  );
+  const metadata = (await res.json()) as AuthServerMetadata;
+  if (!metadata.authorization_endpoint || !metadata.token_endpoint) {
+    throw new Error(`OIDC discovery at ${url} missing authorization_endpoint or token_endpoint`);
+  }
+  cache.set(instance, { metadata, fetchedAt: Date.now() });
+  return metadata;
 }
