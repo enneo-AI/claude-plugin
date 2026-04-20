@@ -3,10 +3,21 @@
 ## Trigger
 Use when the user wants to investigate, search, create, update, or manage tickets and conversations.
 
-## Quick Reference
+## MCP Tools (preferred)
+
+| Tool | Purpose |
+|------|---------|
+| `enneo_ticket_get` | Full ticket data by ID. Pass `refresh: true` to re-run AI processing. |
+| `enneo_ticket_search` | Search by filters (status, channel, tags, dates, etc.). Returns compact rows. |
+
+Use these in preference to raw curl. They handle OAuth transparently and return typed JSON.
+
+## curl Reference
+
+The MCP server writes all credentials (instance + access/refresh tokens) to `~/.enneo/env`. Source it to use curl directly:
 
 ```bash
-. ~/.enneo/env   # loads ENNEO_INSTANCE + ENNEO_TOKEN from OAuth-persisted credentials
+. ~/.enneo/env   # exports ENNEO_INSTANCE, ENNEO_TOKEN, ENNEO_REFRESH_TOKEN, ENNEO_TOKEN_EXPIRES_AT
 BASE="https://${ENNEO_INSTANCE}/api/mind"
 AUTH="Authorization: Bearer ${ENNEO_TOKEN}"
 ```

@@ -3,10 +3,15 @@
 ## Trigger
 Use when the user wants to view or modify instance settings, subchannels, UDFs, event hooks, or understand configuration options.
 
-## Quick Reference
+## Preferred: MCP tools
+Use the plugin's `enneo_*` MCP tools whenever one exists for the operation — they handle OAuth transparently and return typed results. The curl examples below document the underlying REST API and serve as a fallback for operations not yet wrapped by an MCP tool.
+
+## curl Reference
+
+The MCP server writes all credentials (instance + access/refresh tokens) to `~/.enneo/env`. Source it to use curl directly:
 
 ```bash
-. ~/.enneo/env   # loads ENNEO_INSTANCE + ENNEO_TOKEN from OAuth-persisted credentials
+. ~/.enneo/env   # exports ENNEO_INSTANCE, ENNEO_TOKEN, ENNEO_REFRESH_TOKEN, ENNEO_TOKEN_EXPIRES_AT
 BASE="https://${ENNEO_INSTANCE}/api/mind"
 AUTH="Authorization: Bearer ${ENNEO_TOKEN}"
 ```

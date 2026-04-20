@@ -5,8 +5,10 @@ Use when the user reports an issue and needs help debugging. Step-by-step playbo
 
 ## Prerequisites
 
+Prefer MCP tools (`enneo_ticket_get`, `enneo_profile_me`, etc.) for investigation. The curl examples below are fallback references — the MCP server writes credentials to `~/.enneo/env`, so:
+
 ```bash
-. ~/.enneo/env   # loads ENNEO_INSTANCE + ENNEO_TOKEN from OAuth-persisted credentials
+. ~/.enneo/env   # exports ENNEO_INSTANCE, ENNEO_TOKEN, ENNEO_REFRESH_TOKEN, ENNEO_TOKEN_EXPIRES_AT
 BASE="https://${ENNEO_INSTANCE}/api/mind"
 AUTH="Authorization: Bearer ${ENNEO_TOKEN}"
 ```

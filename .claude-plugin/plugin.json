@@ -1,0 +1,14 @@
+{
+  "name": "enneo",
+  "version": "0.2.0",
+  "description": "Enneo platform plugin — skills for ticket investigation, AI agent development, and platform administration, plus a bundled MCP server with OAuth-authenticated API access.",
+  "author": {
+    "name": "Enneo",
+    "url": "https://www.enneo.ai"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/enneo/ai/claude-plugin.git"
+  },
+  "keywords": ["enneo", "customer-service", "ai-agents", "ticketing"]
+}
