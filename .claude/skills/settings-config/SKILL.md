@@ -168,13 +168,3 @@ curl -s -X DELETE "${BASE}/settings/event-hook/{id}" -H "${AUTH}"
 
 ### Available event types
 `TicketCreated`, `TicketUpdated`, `TicketResponse`, `TicketRouted`, `TicketForwarded`, `TicketClosedDueToInactivity`, `ConversationCreated`, `AutoProcessIntent`, `ProfileCreated`, `ProfileUpdated`, `ProfileDeleted`, `EmailAutoresponder`, `SendEmail`, `CronMinute` (5m), `CronHour`, `CronDay`, `CronWeek`, `TestTicketAiQuality`
-
-## Source Code Reference
-
-| Component | Location |
-|-----------|----------|
-| Settings system | `mind/Mind/Services/Settings.php` |
-| Setting definitions | `mind/Mind/Settings/settings*.json` |
-| Read/write handlers | `mind/Mind/Services/SettingReadHandler.php`, `mind/Mind/Services/SettingWriteHandler.php` |
-| Event hooks | `mind/Mind/Routes/EventHookRoute.php` |
-| UDF execution | `mind/Mind/Routes/CodeExecutorRoute.php` |

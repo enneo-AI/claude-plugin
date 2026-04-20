@@ -96,13 +96,3 @@ Tools/UDFs have access to the same SDK as AI agents:
 ### Timeouts
 - Per API call: **30s**
 - Total execution: **45s**
-
-## Source Code Reference
-
-| Component | Location |
-|-----------|----------|
-| Tools route | `mind/Mind/Routes/ToolRoute.php` |
-| Code executor | `code-executor/` (Go service) |
-| SDK (Python) | `code-executor/sdk/python311.py` |
-| SDK (Node.js) | `code-executor/sdk/node20.js` |
-| SDK (PHP) | `code-executor/sdk/php82.php` |

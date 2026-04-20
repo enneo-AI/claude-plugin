@@ -116,8 +116,6 @@ Key fields: `message`, `body`, `history`, `subject`
 
 **Text preprocessing:** Enneo strips footers, signatures, quoted text before AI. Uses `body_clean` + subject + history for detection.
 
-**Source:** `cortex/src/services/ticket/tag_processor.py`, `cortex/src/services/ticket/ticket_analyzer.py`
-
 ---
 
 ### 3. Wrong AI Agent Selected
@@ -126,8 +124,6 @@ Key fields: `message`, `body`, `history`, `subject`
 - `GET /intent/byTicketId/{ticketId}` — which agents detected?
 - `GET /aiAgent/{agentId}` — check detection config
 - Common: tag mismatch, detection prompt too broad/narrow, condition detection wrong
-
-**Source:** `cortex/src/services/ticket/agent_detection.py`
 
 ---
 
@@ -139,8 +135,6 @@ Key fields: `message`, `body`, `history`, `subject`
 - Preview the agent: `POST /aiAgent/{id}/preview?ticketId={ticketId}`
 - Check event traces for `sourceCode` type (executor output/errors)
 - Check for `extract_ticket_parameters_with_ai_*` traces (parameter extraction)
-
-**Source:** `cortex/src/services/ticket/process_parameters.py`, `cortex/src/services/ticket/response_case_handler.py`
 
 ---
 
@@ -172,8 +166,6 @@ curl -s -X POST "${BASE}/event/search?limit=1&includeTraces=true&format=raw" \
 
 **Scheduling:** If `autoProcessingDelayEnabled` is true, there's a delay of `autoProcessingDelay` hours.
 
-**Source:** `mind/Mind/Models/TicketAutoProcessing.php`, `mind/Mind/Models/Intent.php`
-
 ---
 
 ### 6. Ticket Not Routed Correctly
@@ -189,8 +181,6 @@ curl -s -X POST "${BASE}/event/search?limit=1&includeTraces=true&format=raw" \
 - User A opens ticket, stops pinging → ticket served to User B
 - Check `user_timetracking` for overlapping sessions
 
-**Source:** `mind/Mind/Services/Acd.php`
-
 ---
 
 ### 7. "Cortex Did Not Return Any Data"
@@ -201,16 +191,12 @@ Async/sync mismatch: Cortex returned `"Message scheduled for processing"` instea
 - Look for callback traces with valid data
 - May indicate Cortex overload causing async fallback
 
-**Source:** `mind/Mind/Services/Cortex.php` (lines 612-614), `mind/Mind/Models/Intent.php` (lines 460-464)
-
 ---
 
 ### 8. OCR Issues
 
 - Check if attachment was properly uploaded
 - Common: image quality, unusual meter displays, handwritten text
-
-**Source:** `cortex/src/services/process_ocr_meter.py`, `cortex/src/services/process_ocr_item.py`
 
 ---
 
@@ -235,22 +221,3 @@ curl -s "${BASE}/health/cron" -H "${AUTH}"
 # Version
 curl -s "${BASE}/version" -H "${AUTH}"
 ```
-
-## Source Code Deep-Dive Locations
-
-### Ticket Processing Pipeline (Cortex)
-1. `cortex/src/services/process_ticket.py` — Entry point
-2. `cortex/src/services/ticket/ticket_analyzer.py` — Analysis & body cleaning
-3. `cortex/src/services/ticket/tag_processor.py` — Tag detection
-4. `cortex/src/services/ticket/agent_detection.py` — Agent selection
-5. `cortex/src/services/ticket/ai_agent_handler.py` — Agent execution
-6. `cortex/src/services/ticket/process_parameters.py` — Parameter extraction
-7. `cortex/src/services/ticket/response_case_handler.py` — Response handling
-
-### Mind-Side Processing
-- `mind/Mind/Models/TicketAutoProcessing.php` — Auto-processing evaluation
-- `mind/Mind/Models/Intent.php` — Intent lifecycle
-- `mind/Mind/Services/Cortex.php` — Cortex communication
-- `mind/Mind/Services/Acd.php` — Routing engine
-- `mind/Mind/Services/ContractRecognition.php` — Customer identification
-- `mind/Mind/Routes/Dispatcher.php` — All API routes

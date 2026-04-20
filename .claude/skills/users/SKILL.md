@@ -162,11 +162,3 @@ curl -s -X POST "${BASE}/event/search?format=raw" \
 ```
 
 Key routing tables (via internal query): `user_timetracking` (sessions), `user_timetracking_tmp` (real-time pings)
-
-## Source Code Reference
-
-| Component | Location |
-|-----------|----------|
-| Routing engine | `mind/Mind/Services/Acd.php` |
-| Profile routes | `mind/Mind/Routes/ProfileRoute.php` |
-| Team routes | `mind/Mind/Routes/TeamRoute.php` |

@@ -147,13 +147,3 @@ curl -s "${BASE}/internal/query?q=SELECT+id,type,status,duration,createdAt+FROM+
 ```
 
 Key tables: `event`, `event_trace`, `ticket`, `conversation`, `intent`, `ai_agent`, `tag_description`, `ticket_tag`, `settings`
-
-## Source Code Reference
-
-| Component | Location |
-|-----------|----------|
-| Event processing | `mind/Mind/Events/` |
-| Event route | `mind/Mind/Routes/EventRoute.php` |
-| Ticket processing entry | `cortex/src/services/process_ticket.py` |
-| Tag detection | `cortex/src/services/ticket/tag_processor.py` |
-| Agent detection | `cortex/src/services/ticket/agent_detection.py` |

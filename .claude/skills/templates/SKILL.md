@@ -75,9 +75,3 @@ Response cases with `output.type: "textTemplate"` use templates to generate cust
 
 ### Default Template
 The `genericTemplateId` setting defines the fallback template used when no specific template is configured.
-
-## Source Code Reference
-
-| Component | Location |
-|-----------|----------|
-| Template routes | `mind/Mind/Routes/TemplateRoute.php` |

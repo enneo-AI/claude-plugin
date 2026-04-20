@@ -145,11 +145,3 @@ curl -s -X POST "${BASE}/aiQualityCheck/testAiAgent" \
 4. Accept results or identify adjustments needed
 5. Iterate until quality meets threshold
 6. Enable auto-processing (L4/L5)
-
-## Source Code Reference
-
-| Component | Location |
-|-----------|----------|
-| Quality route | `mind/Mind/Routes/AiQualityRoute.php` |
-| Quality assessment (AI) | `cortex/src/services/process_quality_assessment.py` |
-| Auto-processing check | `mind/Mind/Models/TicketAutoProcessing.php` |
