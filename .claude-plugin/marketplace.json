@@ -1,0 +1,23 @@
+{
+  "name": "claude-plugin",
+  "owner": {
+    "name": "Enneo",
+    "email": "hello@enneo.ai"
+  },
+  "metadata": {
+    "description": "Enneo platform plugin for Claude Code",
+    "version": "0.2.0"
+  },
+  "plugins": [
+    {
+      "name": "enneo",
+      "source": ".",
+      "description": "Connect Claude to your Enneo customer service platform — investigate tickets, manage AI agents, debug processing pipelines, and administer your instance.",
+      "version": "0.2.0",
+      "author": {
+        "name": "Enneo",
+        "url": "https://www.enneo.ai"
+      }
+    }
+  ]
+}

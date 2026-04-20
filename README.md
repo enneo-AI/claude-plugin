@@ -12,7 +12,11 @@ A [Claude Code](https://claude.ai/code) plugin that connects Claude to your Enne
 ## Installation
 
 ```bash
-claude plugin install git@github.com:enneo-AI/claude-plugin.git
+# 1. Add the repository as a plugin source
+claude plugin marketplace add https://github.com/enneo-AI/claude-plugin
+
+# 2. Install the plugin (use `claude plugin marketplace list` to confirm the marketplace name)
+claude plugin install enneo@claude-plugin
 ```
 
 On first use, Claude will automatically run the OAuth login flow — it opens your browser, you log in, and credentials are saved to `~/.enneo/env`.
