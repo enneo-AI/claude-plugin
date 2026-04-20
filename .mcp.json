@@ -1,8 +1,6 @@
 {
-  "mcpServers": {
-    "enneo": {
-      "command": "npx",
-      "args": ["-y", "@enneo/mcp-server@latest"]
-    }
+  "enneo": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-server/dist/index.js"]
   }
 }
