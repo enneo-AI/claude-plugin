@@ -6,9 +6,6 @@
     "name": "Enneo",
     "url": "https://www.enneo.ai"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/enneo-AI/claude-plugin.git"
-  },
+  "repository": "https://github.com/enneo-AI/claude-plugin",
   "keywords": ["enneo", "customer-service", "ai-agents", "ticketing"]
 }
