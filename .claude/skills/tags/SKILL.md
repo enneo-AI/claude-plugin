@@ -6,6 +6,7 @@ Use when the user wants to manage tags, view tag trees, test tag detection, or d
 ## Quick Reference
 
 ```bash
+. ~/.enneo/env   # loads ENNEO_INSTANCE + ENNEO_TOKEN from OAuth-persisted credentials
 BASE="https://${ENNEO_INSTANCE}/api/mind"
 AUTH="Authorization: Bearer ${ENNEO_TOKEN}"
 ```

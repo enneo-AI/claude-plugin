@@ -6,6 +6,7 @@ Use when the user reports an issue and needs help debugging. Step-by-step playbo
 ## Prerequisites
 
 ```bash
+. ~/.enneo/env   # loads ENNEO_INSTANCE + ENNEO_TOKEN from OAuth-persisted credentials
 BASE="https://${ENNEO_INSTANCE}/api/mind"
 AUTH="Authorization: Bearer ${ENNEO_TOKEN}"
 ```
