@@ -11,7 +11,11 @@
   "plugins": [
     {
       "name": "enneo",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "enneo-AI/claude-plugin",
+        "ref": "main"
+      },
       "description": "Connect Claude to your Enneo customer service platform — investigate tickets, manage AI agents, debug processing pipelines, and administer your instance.",
       "version": "0.2.0",
       "author": {
