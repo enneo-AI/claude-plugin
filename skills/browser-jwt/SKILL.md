@@ -11,8 +11,8 @@ Use when:
 ## Prerequisites
 
 1. **Claude Code** with this plugin loaded.
-2. **MCP server `Claude in Chrome`** — tools `mcp__Claude_in_Chrome__*` must be visible. Install from https://claude.ai/chrome.
-3. A **non-incognito** Chrome tab on the target Enneo instance with an active login (session cookie `connect.sid`).
+2. A **non-incognito** Chrome window where the user is already signed in to the target Enneo instance (session cookie `connect.sid`).
+3. **Recommended:** the [Claude in Chrome](https://claude.ai/chrome) extension — exposes `mcp__Claude_in_Chrome__*` tools and enables the fully automated flow. Without it, the **Manual fallback** path (DevTools Console snippet) still works.
 
 ## Storage
 
@@ -36,6 +36,21 @@ Use when:
 - Never `cat` or print the file / full token. Mask as `eyJ…<last-8>` in responses.
 
 ## Flow
+
+### Preflight: check Claude in Chrome MCP availability
+
+**Before doing anything else,** verify the Claude in Chrome MCP tools are registered in the current Claude Code session:
+
+- If `mcp__Claude_in_Chrome__tabs_context_mcp` and `mcp__Claude_in_Chrome__javascript_tool` are both in your tool list → continue with the **Automated path** (steps 1–5).
+- If they are **not** registered → do NOT proceed silently. Tell the user explicitly what's missing and how to fix it:
+
+  > To grab a JWT automatically I need the **Claude in Chrome** MCP, but it isn't loaded in this Claude Code session. Two options:
+  > 1. **Install the Chrome extension** at https://claude.ai/chrome (recommended — full automation), then exit and restart Claude Code.
+  > 2. **Manual fallback** — I print a tiny snippet, you run it in DevTools Console of a logged-in tab on `<origin>`, paste the JSON back, and I save the token. Less convenient, but works without the extension.
+
+  Wait for the user to choose. If they pick option 2, jump to the **Manual fallback** section near the end of this skill.
+
+### Automated path
 
 1. **Resolve origin** from the user's request (e.g. `demo.enneo.ai` → `https://demo.enneo.ai`). If ambiguous, use `mcp__Claude_in_Chrome__tabs_context_mcp` and ask which instance.
 2. **Cache check.** Read `~/.enneo/browser-tokens.json` (create `{}` if missing). If the origin record has `exp - now > 86400`, skip to step 5.
@@ -93,9 +108,9 @@ Use when:
 
 > **Note:** Fetching a new JWT does **not** invalidate previously issued JWTs for the same user — each stays valid until its own `exp`. Safe to refresh repeatedly without breaking other open sessions or scripts.
 
-## Fallback: Claude in Chrome MCP unavailable
+## Manual fallback
 
-Print this snippet and ask the user to run it in the target tab's DevTools Console, then paste the JSON back:
+When the Preflight detected that the Claude in Chrome MCP isn't loaded and the user chose option 2: print this snippet and ask them to run it in the target tab's DevTools Console (the tab must be on `<origin>` and the user must be signed in there), then paste the JSON back:
 
 ```js
 (async () => {

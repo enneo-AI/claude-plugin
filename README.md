@@ -5,9 +5,10 @@ A [Claude Code](https://claude.ai/code) plugin that connects Claude to your Enne
 ## Prerequisites
 
 - [Claude Code](https://claude.ai/code) installed
-- Access to an Enneo instance (e.g. `yourcompany.enneo.ai`)
-- A browser (for the OAuth login flow)
-- `curl`, `jq`, `python3`, `openssl` available in your shell
+- Access to an Enneo instance (e.g. `yourcompany.enneo.ai`) where you can log in
+- A Chrome browser, signed in to your Enneo instance
+- **Recommended:** the [Claude in Chrome](https://claude.ai/chrome) extension — enables fully automated token refresh. A manual DevTools-console fallback also works without it.
+- `curl`, `jq` available in your shell
 
 ## Installation
 
@@ -19,7 +20,15 @@ claude plugin marketplace add https://github.com/enneo-AI/claude-plugin
 claude plugin install enneo@claude-plugin
 ```
 
-On first use, Claude will automatically run the OAuth login flow — it opens your browser, you log in, and credentials are saved to `~/.enneo/env`.
+On first use, when you ask Claude about an Enneo instance, the `browser-jwt` skill grabs a JWT from your already-authenticated Chrome session and saves it to `~/.enneo/browser-tokens.json` (mode 600, keyed by origin). After that, every skill works directly.
+
+## Updating
+
+```bash
+claude plugin update enneo@claude-plugin
+```
+
+Then exit and start a new Claude Code session — the update only takes effect after restart.
 
 ## What You Can Do
 
@@ -60,14 +69,14 @@ Show me the event trace for ticket #12345
 
 ## Switching Instances
 
-Just ask Claude: *"Connect to staging.enneo.ai"* — it will re-run the OAuth flow for the new instance.
+Just ask Claude: *"Connect to staging.enneo.ai"* — it runs `browser-jwt` for the new instance (you need to be signed in to it in Chrome). Tokens for multiple instances coexist in `~/.enneo/browser-tokens.json`, keyed by origin.
 
 ## Security
 
-- Credentials are stored in `~/.enneo/env` with mode 600 (owner read/write only)
-- The OAuth flow uses PKCE (RFC 7636) and loopback redirection (RFC 8252) — no secrets are ever stored in the plugin itself
+- Tokens are stored in `~/.enneo/browser-tokens.json` with mode 600 (owner read/write only)
+- The plugin never asks for your password — it obtains a JWT by calling `POST /api/auth/v1/jwt` from inside an already-authenticated browser session, the same way the Enneo web UI gets one
 - Write operations (create, update, delete) always require explicit confirmation before execution
-- Your token is never displayed or logged
+- Tokens are never displayed in full — masked as `eyJ…<last-8>` when shown
 
 ## License
 
