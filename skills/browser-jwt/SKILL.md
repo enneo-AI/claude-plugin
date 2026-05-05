@@ -42,18 +42,17 @@ Use when:
 ## Flow
 
 1. **Resolve origin** from the user's request (e.g. `demo.enneo.ai` → `https://demo.enneo.ai`).
-2. **Cache check.** Read `~/.enneo/browser-tokens.json` (create `{}` if missing). If the origin record has `exp - now > 86400`, skip to step 5.
-3. **Ask the user to open two URLs in their already-authenticated browser** and paste the second response back:
+2. **Cache check.** Read `~/.enneo/browser-tokens.json` (create `{}` if missing). If the origin record has `exp - now > 86400`, skip to step 4.
+3. **Ask the user to copy the JWT from the Enneo UI** and paste it here:
 
-   1. `<origin>/api/auth/v1/profile` — shows their user `id` in the JSON.
-   2. `<origin>/api/mind/jwt/<id>` — returns `{"token": "eyJ..."}`.
+   > In your already-authenticated browser, open `<origin>` and go to **Profile Settings → Login → API key**. The field shows your JWT — copy it and paste here.
 
-   If either URL returns `401` / `403`, surface it and ask the user to sign in to `<origin>` first. Do not attempt to log them in yourself.
-4. **Decode and store.** Take the `token` field from the pasted JSON, decode the JWT payload (base64url middle segment) for `exp` and `userId`, then merge into `~/.enneo/browser-tokens.json`, preserving other origins:
+   No URL or user id needed — they navigate from the avatar / settings menu. If they're not signed in, ask them to sign in first; do not attempt to log them in yourself.
+4. **Decode and store.** Decode the pasted JWT's payload (base64url middle segment) for `exp` and `userId`, then merge into `~/.enneo/browser-tokens.json`, preserving other origins:
 
    ```bash
    ORIGIN="https://demo.enneo.ai"
-   TOKEN="eyJ..."        # from the user's pasted JSON
+   TOKEN="eyJ..."        # the JWT the user pasted
    EXP=$(node -p "JSON.parse(Buffer.from(process.argv[1].split('.')[1],'base64url')).exp" "$TOKEN")
    USERID=$(node -p "JSON.parse(Buffer.from(process.argv[1].split('.')[1],'base64url')).userId ?? null" "$TOKEN")
    IAT=$(date -u +%FT%TZ)
@@ -77,4 +76,4 @@ Use when:
 ## Edge cases
 
 - **Multiple accounts per origin.** One token per origin; switching overwrites. Cached `userId` reflects the current account.
-- **Not logged in.** The profile URL returns `401` / `403` — surface it and ask the user to sign in. Do not retry automatically.
+- **Not signed in.** The user can't reach Profile Settings without signing in — ask them to sign in first. Do not retry automatically.

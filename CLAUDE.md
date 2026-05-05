@@ -8,7 +8,7 @@ The plugin is a collection of **skills** (`skills/*`) that document the Enneo RE
 
 ## Startup — Connection Setup
 
-When the user wants to query an Enneo instance, you need a valid JWT in `~/.enneo/browser-tokens.json` for that instance's origin. Use the `browser-jwt` skill to obtain or refresh one — it walks the user through opening two URLs in their already-authenticated browser and stores the resulting token (mode 600, keyed by origin). After that, every curl example in the skills below works directly.
+When the user wants to query an Enneo instance, you need a valid JWT in `~/.enneo/browser-tokens.json` for that instance's origin. Use the `browser-jwt` skill to obtain or refresh one — it asks the user to copy the JWT from the Enneo UI (Profile Settings → API key) and stores it (mode 600, keyed by origin). After that, every curl example in the skills below works directly.
 
 Always run the `browser-jwt` skill for token exchange — do not invent your own way of asking for a JWT.
 
