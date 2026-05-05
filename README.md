@@ -19,7 +19,7 @@ claude plugin marketplace add https://github.com/enneo-AI/claude-plugin
 claude plugin install enneo@claude-plugin
 ```
 
-On first use, when you ask Claude about an Enneo instance, the `browser-jwt` skill walks you through opening two URLs in your already-authenticated browser session and saves the JWT to `~/.enneo/browser-tokens.json` (mode 600, keyed by origin). After that, every skill works directly.
+On first use, when you ask Claude about an Enneo instance, the `browser-jwt` skill asks you to copy the JWT from your Profile Settings page (Login → API key) and saves it to `~/.enneo/browser-tokens.json` (mode 600, keyed by origin). After that, every skill works directly.
 
 ## Updating
 
@@ -73,7 +73,7 @@ Just ask Claude: *"Connect to staging.enneo.ai"* — it runs `browser-jwt` for t
 ## Security
 
 - Tokens are stored in `~/.enneo/browser-tokens.json` with mode 600 (owner read/write only)
-- The plugin never asks for your password — it obtains a JWT by having you open `GET /api/mind/jwt/{id}` in an already-authenticated browser session, the same way the Enneo web UI gets one
+- The plugin never asks for your password — it just shows you where to find the JWT in your already-authenticated Profile Settings page
 - Write operations (create, update, delete) always require explicit confirmation before execution
 - Tokens are never displayed in full — masked as `eyJ…<last-8>` when shown
 
