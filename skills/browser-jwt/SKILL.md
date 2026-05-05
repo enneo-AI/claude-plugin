@@ -45,9 +45,9 @@ Use when:
 2. **Cache check.** Read `~/.enneo/browser-tokens.json` (create `{}` if missing). If the origin record has `exp - now > 86400`, skip to step 4.
 3. **Ask the user to copy the JWT from the Enneo UI** and paste it here:
 
-   > In your already-authenticated browser, open `<origin>` and go to **Profile Settings → Login → API key**. The field shows your JWT — copy it and paste here.
+   > Open `<origin>/settings/profile` in your already-authenticated browser. In the **Login** section, find the **API key** field — copy the value and paste it here.
 
-   No URL or user id needed — they navigate from the avatar / settings menu. If they're not signed in, ask them to sign in first; do not attempt to log them in yourself.
+   If they're not signed in, ask them to sign in to `<origin>` first; do not attempt to log them in yourself.
 4. **Decode and store.** Decode the pasted JWT's payload (base64url middle segment) for `exp` and `userId`, then merge into `~/.enneo/browser-tokens.json`, preserving other origins:
 
    ```bash
