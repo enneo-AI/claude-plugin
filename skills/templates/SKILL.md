@@ -1,3 +1,8 @@
+---
+name: templates
+description: Use when the user wants to manage email/response templates, preview template rendering, or understand template variables.
+---
+
 # Template Management
 
 ## Trigger

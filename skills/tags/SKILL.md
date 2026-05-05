@@ -1,3 +1,8 @@
+---
+name: tags
+description: Use when the user wants to manage tags, view tag trees, test tag detection, or debug tag-related issues.
+---
+
 # Tag Management
 
 ## Trigger

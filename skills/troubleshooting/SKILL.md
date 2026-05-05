@@ -1,3 +1,8 @@
+---
+name: troubleshooting
+description: Use when the user reports an issue and needs help debugging. Step-by-step playbook for all common problems.
+---
+
 # Troubleshooting Guide
 
 ## Trigger

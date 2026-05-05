@@ -8,9 +8,9 @@ The plugin is a collection of **skills** (`skills/*`) that document the Enneo RE
 
 ## Startup — Connection Setup
 
-When the user wants to query an Enneo instance, you need a valid JWT in `~/.enneo/browser-tokens.json` for that instance's origin. Use the `browser-jwt` skill to obtain or refresh one — it grabs a JWT from an already-authenticated browser session and stores it (mode 600, keyed by origin). After that, every curl example in the skills below works directly.
+When the user wants to query an Enneo instance, you need a valid JWT in `~/.enneo/browser-tokens.json` for that instance's origin. Use the `browser-jwt` skill to obtain or refresh one — it walks the user through opening two URLs in their already-authenticated browser and stores the resulting token (mode 600, keyed by origin). After that, every curl example in the skills below works directly.
 
-Never ask the user to paste a JWT into chat — the `browser-jwt` skill handles extraction.
+Always run the `browser-jwt` skill for token exchange — do not invent your own way of asking for a JWT.
 
 ## Making API Calls
 
@@ -23,6 +23,20 @@ curl -s "${ORIGIN}/api/mind/..." -H "Authorization: Bearer ${TOKEN}"
 ```
 
 If the file does not exist, the origin is missing from it, or `exp - now < 86400`, activate the `browser-jwt` skill before making the call.
+
+If you need an endpoint that isn't documented in any skill, look it up in the live OpenAPI spec (public, no auth required, YAML):
+
+```bash
+# search paths by keyword
+curl -s "${ORIGIN}/api/mind/docs/open-api" \
+  | yq '.paths | keys[] | select(test("<keyword>"; "i"))'
+
+# inspect one endpoint
+curl -s "${ORIGIN}/api/mind/docs/open-api" \
+  | yq '.paths."/api/mind/profiles/onlineSummary"'
+```
+
+User-facing docs: https://docs.enneo.ai. Other services have their own specs: Cortex at `/api/cortex/openapi.json` (JSON), Auth at `/api/auth/docs` (Swagger UI HTML).
 
 ## Safety Rules
 
@@ -52,7 +66,7 @@ Skills are loaded on demand based on the user's request. Each skill covers a spe
 | `telephony` | Telephony lines, voicebots, call routing, call metrics |
 | `tools` | AI tools — listing, inspecting, executing custom tools and UDFs |
 | `troubleshooting` | Step-by-step debugging guide for all common issues |
-| `browser-jwt` | Obtain / refresh a JWT from a logged-in Chrome session — required before any curl-based API call; supports multiple instances |
+| `browser-jwt` | Obtain / refresh a JWT from a logged-in browser session — required before any curl-based API call; supports multiple instances |
 
 ## Response Style
 

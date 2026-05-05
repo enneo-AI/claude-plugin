@@ -1,3 +1,8 @@
+---
+name: tickets
+description: Use when the user wants to investigate, search, create, update, or manage tickets and conversations.
+---
+
 # Ticket Management
 
 ## Trigger

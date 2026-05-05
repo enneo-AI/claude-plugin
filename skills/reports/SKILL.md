@@ -1,3 +1,8 @@
+---
+name: reports
+description: Use when the user wants dashboard reports, AI performance metrics, telephony reports, or analytics data.
+---
+
 # Reports & Analytics
 
 ## Trigger

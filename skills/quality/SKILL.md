@@ -1,3 +1,8 @@
+---
+name: quality
+description: Use when the user wants to manage scorecards, assessments, AI quality checks, test runs, or understand automation levels.
+---
+
 # Quality Management
 
 ## Trigger

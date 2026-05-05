@@ -1,3 +1,8 @@
+---
+name: ai-agents
+description: Use when the user wants to create, modify, test, preview, inspect, or develop AI agents — including writing agent code, understanding agent structure, testing with real data, or debugging agent execution.
+---
+
 # AI Agent Management & Development
 
 ## Trigger

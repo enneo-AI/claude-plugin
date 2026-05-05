@@ -1,3 +1,8 @@
+---
+name: exports
+description: Use when the user wants to export tickets, worklogs, messages, surveys, quality assessments, or other data.
+---
+
 # Data Exports
 
 ## Trigger
