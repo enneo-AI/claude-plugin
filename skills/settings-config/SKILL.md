@@ -1,3 +1,8 @@
+---
+name: settings-config
+description: Use when the user wants to view or modify instance settings, subchannels, UDFs, event hooks, or understand configuration options.
+---
+
 # Settings & Configuration
 
 ## Trigger

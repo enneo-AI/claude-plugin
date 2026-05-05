@@ -1,3 +1,8 @@
+---
+name: tools
+description: Use when the user wants to list, inspect, or execute AI tools, UDFs, or code executors.
+---
+
 # AI Tools Management
 
 ## Trigger

@@ -1,3 +1,8 @@
+---
+name: knowledge
+description: Use when the user wants to manage wiki/knowledge base articles — search, create, update, organize, or understand how knowledge is used by AI.
+---
+
 # Knowledge Base Management
 
 ## Trigger

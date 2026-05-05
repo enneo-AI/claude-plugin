@@ -1,3 +1,8 @@
+---
+name: telephony
+description: Use when the user wants to manage telephony lines, voicebots, call routing, view call metrics, or debug telephony issues.
+---
+
 # Telephony & Voice
 
 ## Trigger

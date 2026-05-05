@@ -1,3 +1,8 @@
+---
+name: customers
+description: Use when the user wants to look up customers, contracts, customer history, or debug customer identification.
+---
+
 # Customer & Contract Management
 
 ## Trigger

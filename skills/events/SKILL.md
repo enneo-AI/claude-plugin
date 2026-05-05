@@ -1,3 +1,8 @@
+---
+name: events
+description: Use when the user wants to search events, analyze processing traces, debug the AI pipeline, or understand what happened during ticket processing.
+---
+
 # Event Trace Analysis & Debugging
 
 ## Trigger

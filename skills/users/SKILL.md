@@ -1,3 +1,8 @@
+---
+name: users
+description: Use when the user wants to manage profiles, teams, roles, routing status, or understand user/team configuration.
+---
+
 # User, Team & Role Management
 
 ## Trigger
