@@ -8,7 +8,7 @@ The plugin is a collection of **skills** (`skills/*`) that document the Enneo RE
 
 ## Startup — Connection Setup
 
-When the user wants to query an Enneo instance, you need a valid JWT in `~/.enneo/browser-tokens.json` for that instance's origin. Use the `browser-jwt` skill to obtain or refresh one — it asks the user to copy the JWT from the Enneo UI (Profile Settings → API key) and stores it (mode 600, keyed by origin). After that, every curl example in the skills below works directly.
+When the user wants to query an Enneo instance, you need a valid JWT in `~/.enneo/browser-tokens.json` for that instance's origin. Use the `browser-jwt` skill to obtain or refresh one — it asks the user to mint an API key in the Enneo UI (Profile Settings → Login → API keys) and stores it (mode 600, keyed by origin). Enneo shows the key only once. After that, every curl example in the skills below works directly.
 
 Always run the `browser-jwt` skill for token exchange — do not invent your own way of asking for a JWT.
 
@@ -42,7 +42,7 @@ User-facing docs: https://docs.enneo.ai. Other services have their own specs: Co
 
 - **Read-only operations** (GET) — safe to run without confirmation.
 - **Write operations** (POST / PATCH / PUT / DELETE) — always explain what you're about to do and ask for user confirmation before executing.
-- Never `cat`, `echo`, or otherwise display the contents of `~/.enneo/browser-tokens.json`. If the user wants to confirm they're connected, show only the origin, `userId`, and `exp`; mask the token as `eyJ…<last-8>`.
+- Never `cat`, `echo`, or otherwise display the contents of `~/.enneo/browser-tokens.json`. If the user wants to confirm they're connected, show only the origin, `userId`, and `exp`; mask the token as `eyJ…<last-6>`.
 - When displaying ticket data, be mindful of PII — summarize rather than dump raw customer data unless asked.
 
 ## Skills
@@ -55,8 +55,8 @@ Skills are loaded on demand based on the user's request. Each skill covers a spe
 | `ai-agents` | Creating, modifying, testing, previewing AI agents; SDK, JSON structure, two-phase model, development workflow |
 | `customers` | Looking up customers, contracts, customer history, legitimation debugging |
 | `events` | Searching events, analyzing event traces with jq, debugging the AI processing pipeline |
-| `knowledge` | Managing knowledge base articles (wiki), searching, creating, updating |
-| `settings-config` | Viewing and modifying instance settings, subchannels, UDFs, event hooks |
+| `knowledge` | Managing knowledge base articles (wiki), file and website connectors, searching, creating, updating |
+| `settings-config` | Viewing and modifying instance settings, subchannels, UDFs, event hooks, feature flags |
 | `reports` | Dashboard reports, AI performance metrics, telephony reports |
 | `exports` | Exporting tickets, worklogs, messages, surveys, quality assessments |
 | `quality` | Quality management — scorecards, assessments, AI quality checks, test runs, automation levels |
@@ -66,7 +66,7 @@ Skills are loaded on demand based on the user's request. Each skill covers a spe
 | `telephony` | Telephony lines, voicebots, call routing, call metrics |
 | `tools` | AI tools — listing, inspecting, executing custom tools and UDFs |
 | `troubleshooting` | Step-by-step debugging guide for all common issues |
-| `browser-jwt` | Obtain / refresh a JWT from a logged-in browser session — required before any curl-based API call; supports multiple instances |
+| `browser-jwt` | Mint, list and withdraw Enneo API keys — required before any curl-based API call; supports multiple instances |
 
 ## Response Style
 
