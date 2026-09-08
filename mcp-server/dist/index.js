@@ -4,7 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema, } from "@modelcontextprotocol/sdk/types.js";
 import { tools, handleTool } from "./tools/index.js";
 const server = new Server({
-    name: "@enneo/mcp-server",
+    name: "@enneo/claude-mcp-server",
     version: "0.1.0",
 }, {
     capabilities: { tools: {} },
@@ -33,9 +33,9 @@ async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
     // stderr is fine for logs; stdout is the MCP channel
-    console.error("[enneo-mcp] server ready");
+    console.error("[enneo-claude-mcp] server ready");
 }
 main().catch((err) => {
-    console.error("[enneo-mcp] fatal:", err);
+    console.error("[enneo-claude-mcp] fatal:", err);
     process.exit(1);
 });
