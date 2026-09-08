@@ -52,7 +52,7 @@ curl -s "${BASE}/knowledgeSource?orderByField=modifiedAt&orderByDirection=desc" 
 # Filter by modification date — MySQL datetime, exactly Y-m-d H:i:s
 curl -s --get "${BASE}/knowledgeSource" --data-urlencode "modifiedAfter=2026-01-01 00:00:00" -H "${AUTH}"
 
-# Plain search — MySQL fulltext/LIKE over name, title, text. No AI, no `answer`.
+# Plain search — MySQL fulltext/LIKE over name, title, text. No AI; `answer` comes back null.
 curl -s --get "${BASE}/knowledgeSource" --data-urlencode "q=How do I cancel" -H "${AUTH}"
 
 # "Ask Neo" — isAi=1 routes the question through Cortex and returns a generated answer
@@ -60,7 +60,9 @@ curl -s --get "${BASE}/knowledgeSource" --data-urlencode "q=How do I cancel" -d 
   | jq '{answer, items: [.items[] | {id, name, title}]}'
 ```
 
-`q` needs at least 2 characters and overrides the other filters. Without `isAi=1` the `answer` field is absent — that flag is the difference between the dropdown suggestion list and Ask Neo.
+`q` needs at least 2 characters and overrides the other filters. Without `isAi=1` the `answer` key is
+still present but **null** — test the value, not the key. That flag is the difference between the
+dropdown suggestion list and Ask Neo.
 
 ```bash
 # Dashboard (news + most-read overview)
