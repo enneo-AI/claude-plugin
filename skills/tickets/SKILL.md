@@ -12,15 +12,16 @@ Use when the user wants to investigate, search, create, update, or manage ticket
 
 | Tool | Purpose |
 |------|---------|
-| `enneo_ticket_get` | Ticket by ID (body, conversations, attachments, template). Pass `refresh: true` to re-run AI. |
+| `enneo_ticket_get` | Ticket by ID — body, tags, attachments, reply template, customer and intents. Pass `refresh: true` to re-run AI. |
 | `enneo_ticket_search` | Search by filters (status, channel, tags, dates, etc.). Returns compact rows. |
 
 Use these in preference to raw curl. They handle OAuth transparently and return typed JSON.
 
-**Caveat:** `enneo_ticket_get` does not send `includeCustomer` / `includeIntents`, so the ERP customer
-object and the intent list are **absent** from its result. For those, use curl with the flags below.
-It also counts as a human ticket-open (records `workedOnBy` + time tracking); curl with `?viewing=false`
-does not.
+**Caveat:** `enneo_ticket_get` counts as a human ticket-open — it records `workedOnBy`, starts time
+tracking and can trigger an ERP contract refresh, because Mind defaults `viewing` to `true` and the
+tool does not override it. When you are only investigating, prefer curl with `?viewing=false`, which
+hides nothing and writes nothing. Conversations are not in the result either way; they come from
+`/ticket/{id}/conversation`.
 
 ## curl Reference
 
