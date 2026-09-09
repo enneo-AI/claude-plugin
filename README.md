@@ -6,7 +6,7 @@ A [Claude Code](https://claude.ai/code) plugin that connects Claude to your Enne
 
 - [Claude Code](https://claude.ai/code) installed
 - Access to an Enneo instance (e.g. `yourcompany.enneo.ai`) where you can log in
-- A browser, signed in to your Enneo instance
+- A saved profile API key, or permission to create one in Profile Settings → Login → API keys
 - `curl`, `jq` available in your shell
 
 ## Installation
@@ -19,7 +19,25 @@ claude plugin marketplace add https://github.com/enneo-AI/claude-plugin
 claude plugin install enneo@claude-plugin
 ```
 
-On first use, when you ask Claude about an Enneo instance, the `browser-jwt` skill asks you to mint an API key on your Profile Settings page (Login → API keys → create a named key) and saves it to `~/.enneo/browser-tokens.json` (mode 600, keyed by origin). Enneo shows the key only once. After that, every skill works directly.
+The native MCP tools and curl examples share one credential file: `~/.enneo/env`. Reuse an existing profile API key for your instance. If you need a new key, create it in **Profile Settings → Login → API keys**; Enneo shows it once. Enter it locally in a text editor, without sending it to Claude:
+
+```bash
+mkdir -p ~/.enneo
+chmod 700 ~/.enneo
+touch ~/.enneo/env
+chmod 600 ~/.enneo/env
+```
+
+The file contains these two lines, with your hostname and key:
+
+```bash
+export ENNEO_INSTANCE="yourcompany.enneo.ai"
+export ENNEO_TOKEN="<your profile API key>"
+```
+
+Ask Claude to check the connection with `enneo_profile_me`. Subsequent calls reuse the saved key. The plugin does not open a browser or renew keys automatically; missing expiry metadata does not prevent reuse.
+
+If your key is already in `~/.enneo/browser-tokens.json`, follow the [one-time local migration](skills/browser-jwt/SKILL.md#reuse-a-legacy-browser-cache) to copy the matching origin's key into `~/.enneo/env`. You do not need to issue another key.
 
 ## Updating
 
@@ -68,14 +86,14 @@ Show me the event trace for ticket #12345
 
 ## Switching Instances
 
-Just ask Claude: *"Connect to staging.enneo.ai"* — it runs `browser-jwt` for the new instance (you need to be signed in to it in your browser). Tokens for multiple instances coexist in `~/.enneo/browser-tokens.json`, keyed by origin.
+Ask Claude: *"Connect to staging.enneo.ai"*. `enneo_configure` switches the active instance and clears the previous key. Enter a key for the new instance locally in `~/.enneo/env`. Configuring the same instance keeps its key; `reset: true` clears it locally without revoking it in Enneo. There is one active instance/key pair.
 
 ## Security
 
-- Tokens are stored in `~/.enneo/browser-tokens.json` with mode 600 (owner read/write only)
-- The plugin never asks for your password — it just shows you where to mint an API key in your already-authenticated Profile Settings page
+- The instance and key are stored in `~/.enneo/env` with mode 600 (owner read/write only)
+- Enter the key locally; the plugin never needs your password or your key in chat
 - Write operations (create, update, delete) always require explicit confirmation before execution
-- Tokens are never displayed in full — masked as `eyJ…<last-6>` when shown, the same last characters Enneo itself lists
+- Connection checks display the instance and profile, not the token
 - Keys can be listed and withdrawn from the same Profile Settings panel, or over the API; withdrawing one takes effect immediately
 
 ## License

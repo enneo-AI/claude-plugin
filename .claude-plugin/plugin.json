@@ -1,7 +1,7 @@
 {
   "name": "enneo",
   "version": "0.2.1",
-  "description": "Enneo platform plugin — skills for ticket investigation, AI agent development, and platform administration, plus a bundled MCP server with OAuth-authenticated API access.",
+  "description": "Enneo platform plugin — skills for ticket investigation, AI agent development, and platform administration, plus a bundled MCP server using a saved profile API key.",
   "author": {
     "name": "Enneo",
     "url": "https://www.enneo.ai"

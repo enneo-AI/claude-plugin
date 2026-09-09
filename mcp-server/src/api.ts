@@ -1,5 +1,4 @@
-import { getAccessToken } from "./oauth/client.js";
-import { loadEnv } from "./storage.js";
+import { loadEnv, normalizeInstance } from "./storage.js";
 
 interface ApiOptions {
   method?: string;
@@ -7,25 +6,23 @@ interface ApiOptions {
   body?: unknown;
 }
 
-async function getInstanceOrThrow(): Promise<string> {
-  const { instance } = await loadEnv();
+/** Make an authenticated call with the saved profile API key. */
+export async function enneoApi<T = unknown>(path: string, opts: ApiOptions = {}): Promise<T> {
+  // Read the instance and its key together, even if configure runs concurrently.
+  const { instance, access_token: token } = await loadEnv();
   if (!instance) {
     throw new Error(
       "Enneo instance not configured. Call the `enneo_configure` tool first with e.g. {\"instance\": \"demo.enneo.ai\"}.",
     );
   }
-  return instance;
-}
+  const hostname = normalizeInstance(instance);
+  if (!token) {
+    throw new Error(
+      `No API key saved for ${hostname}. In Enneo, open Profile Settings → Login → API keys. Reuse a saved key for this instance, or create one if needed, then enter it locally as ENNEO_TOKEN in ~/.enneo/env alongside ENNEO_INSTANCE="${hostname}" (mode 600). Do not paste the key into chat.`,
+    );
+  }
 
-/**
- * Make an authenticated call to the Enneo Mind API.
- * Transparently handles OAuth — the first call per instance may open a browser.
- */
-export async function enneoApi<T = unknown>(path: string, opts: ApiOptions = {}): Promise<T> {
-  const instance = await getInstanceOrThrow();
-  const token = await getAccessToken(instance);
-
-  const url = new URL(`https://${instance}/api/mind${path}`);
+  const url = new URL(`https://${hostname}/api/mind${path}`);
   if (opts.query) {
     for (const [k, v] of Object.entries(opts.query)) {
       if (v === undefined) continue;
@@ -45,6 +42,11 @@ export async function enneoApi<T = unknown>(path: string, opts: ApiOptions = {})
 
   const res = await fetch(url, init);
   const text = await res.text();
+  if (res.status === 401) {
+    throw new Error(
+      `Enneo rejected the saved API key for ${hostname} (401). Check Profile Settings → Login → API keys and update ENNEO_TOKEN in ~/.enneo/env locally if the key has expired or been revoked.`,
+    );
+  }
   if (!res.ok) {
     throw new Error(`${init.method} ${path} -> ${res.status}: ${text.slice(0, 500)}`);
   }
