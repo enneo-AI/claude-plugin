@@ -5,14 +5,15 @@
   "license": "UNLICENSED",
   "type": "module",
   "bin": {
-    "enneo-claude-mcp-server": "dist/index.js"
+    "enneo-claude-mcp-server": "bundle/index.js"
   },
-  "files": ["dist"],
+  "files": ["bundle"],
   "scripts": {
     "build": "tsc",
+    "bundle": "npm run build && esbuild dist/index.js --bundle --platform=node --format=esm --target=node18 --outfile=bundle/index.js",
     "dev": "tsc --watch",
-    "start": "node dist/index.js",
-    "prepare": "npm run build"
+    "start": "node bundle/index.js",
+    "prepare": "npm run bundle"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.12.0",
+    "esbuild": "^0.25.0",
     "typescript": "^5.5.0"
   },
   "engines": {
