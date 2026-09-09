@@ -1,4 +1,3 @@
-import { getAccessToken } from "./oauth/client.js";
 import { loadEnv } from "./storage.js";
 
 interface ApiOptions {
@@ -19,11 +18,14 @@ async function getInstanceOrThrow(): Promise<string> {
 
 /**
  * Make an authenticated call to the Enneo Mind API.
- * Transparently handles OAuth — the first call per instance may open a browser.
+ * Uses the API key already saved in ~/.enneo/env.
  */
 export async function enneoApi<T = unknown>(path: string, opts: ApiOptions = {}): Promise<T> {
   const instance = await getInstanceOrThrow();
-  const token = await getAccessToken(instance);
+  const { access_token: token } = await loadEnv();
+  if (!token) {
+    throw new Error(`Set ENNEO_TOKEN in ~/.enneo/env to your existing API key from https://${instance}/settings/profile (Login → API keys).`);
+  }
 
   const url = new URL(`https://${instance}/api/mind${path}`);
   if (opts.query) {
