@@ -3258,8 +3258,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path) {
-      let input = path;
+    function removeDotSegments(path2) {
+      let input = path2;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3668,8 +3668,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path && path !== "/" ? path : void 0;
+        const path2 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path2 && path2 !== "/" ? path2 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -7181,12 +7181,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs2, exportName) {
+    function addFormats(ajv, list, fs7, exportName) {
       var _a;
       var _b;
       (_a = (_b = ajv.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs2[f]);
+        ajv.addFormat(f, fs7[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -7390,10 +7390,10 @@ function assignProp(target, prop, value) {
     configurable: true
   });
 }
-function getElementAtPath(obj, path) {
-  if (!path)
+function getElementAtPath(obj, path2) {
+  if (!path2)
     return obj;
-  return path.reduce((acc, key) => acc?.[key], obj);
+  return path2.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -7713,11 +7713,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path, issues) {
+function prefixIssues(path2, issues) {
   return issues.map((iss) => {
     var _a;
     (_a = iss).path ?? (_a.path = []);
-    iss.path.unshift(path);
+    iss.path.unshift(path2);
     return iss;
   });
 }
@@ -14351,6 +14351,11 @@ async function clearTokens() {
   delete current.expires_at;
   await saveEnv(current);
 }
+function isExpired(expiresAt, skewSeconds = 30) {
+  if (!expiresAt)
+    return true;
+  return Date.now() / 1e3 + skewSeconds >= expiresAt;
+}
 function shellEscape(value) {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\$/g, "\\$").replace(/`/g, "\\`");
 }
@@ -14358,7 +14363,7 @@ function shellEscape(value) {
 // dist/tools/configure.js
 var configure = {
   name: "enneo_configure",
-  description: "Configure the Enneo instance this plugin connects to. Run this before any other tool on first use, or when switching environments.",
+  description: "Configure the Enneo instance this plugin connects to. Run this before any other tool on first use, or when switching environments. No token needed \u2014 the next tool call will open a browser for OAuth login.",
   inputSchema: {
     type: "object",
     properties: {
@@ -14368,7 +14373,7 @@ var configure = {
       },
       reset: {
         type: "boolean",
-        description: "If true, also clear any cached tokens for this instance.",
+        description: "If true, also clear any cached OAuth tokens for this instance.",
         default: false
       }
     },
@@ -14387,11 +14392,711 @@ var configure = {
     await updateEnv({ instance });
     const note = instanceChanged ? `Instance changed from ${current.instance} \u2192 ${instance}; cached tokens cleared.` : `Instance: ${instance}`;
     return text(`Configured. ${note}
-Credentials are stored at ~/.enneo/env (mode 600).
+Credentials will be stored at ~/.enneo/env (mode 600).
 
-Set ENNEO_TOKEN there to an existing API key from Profile Settings \u2192 Login \u2192 API keys.`);
+The next authenticated tool call will open a browser for OAuth login.`);
   }
 };
+
+// node_modules/open/index.js
+import process8 from "node:process";
+import { Buffer as Buffer2 } from "node:buffer";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify as promisify5 } from "node:util";
+import childProcess from "node:child_process";
+import fs6, { constants as fsConstants2 } from "node:fs/promises";
+
+// node_modules/wsl-utils/index.js
+import process4 from "node:process";
+import fs5, { constants as fsConstants } from "node:fs/promises";
+
+// node_modules/is-wsl/index.js
+import process3 from "node:process";
+import os from "node:os";
+import fs4 from "node:fs";
+
+// node_modules/is-inside-container/index.js
+import fs3 from "node:fs";
+
+// node_modules/is-docker/index.js
+import fs2 from "node:fs";
+var isDockerCached;
+function hasDockerEnv() {
+  try {
+    fs2.statSync("/.dockerenv");
+    return true;
+  } catch {
+    return false;
+  }
+}
+function hasDockerCGroup() {
+  try {
+    return fs2.readFileSync("/proc/self/cgroup", "utf8").includes("docker");
+  } catch {
+    return false;
+  }
+}
+function isDocker() {
+  if (isDockerCached === void 0) {
+    isDockerCached = hasDockerEnv() || hasDockerCGroup();
+  }
+  return isDockerCached;
+}
+
+// node_modules/is-inside-container/index.js
+var cachedResult;
+var hasContainerEnv = () => {
+  try {
+    fs3.statSync("/run/.containerenv");
+    return true;
+  } catch {
+    return false;
+  }
+};
+function isInsideContainer() {
+  if (cachedResult === void 0) {
+    cachedResult = hasContainerEnv() || isDocker();
+  }
+  return cachedResult;
+}
+
+// node_modules/is-wsl/index.js
+var isWsl = () => {
+  if (process3.platform !== "linux") {
+    return false;
+  }
+  if (os.release().toLowerCase().includes("microsoft")) {
+    if (isInsideContainer()) {
+      return false;
+    }
+    return true;
+  }
+  try {
+    if (fs4.readFileSync("/proc/version", "utf8").toLowerCase().includes("microsoft")) {
+      return !isInsideContainer();
+    }
+  } catch {
+  }
+  if (fs4.existsSync("/proc/sys/fs/binfmt_misc/WSLInterop") || fs4.existsSync("/run/WSL")) {
+    return !isInsideContainer();
+  }
+  return false;
+};
+var is_wsl_default = process3.env.__IS_WSL_TEST__ ? isWsl : isWsl();
+
+// node_modules/wsl-utils/index.js
+var wslDrivesMountPoint = /* @__PURE__ */ (() => {
+  const defaultMountPoint = "/mnt/";
+  let mountPoint;
+  return async function() {
+    if (mountPoint) {
+      return mountPoint;
+    }
+    const configFilePath = "/etc/wsl.conf";
+    let isConfigFileExists = false;
+    try {
+      await fs5.access(configFilePath, fsConstants.F_OK);
+      isConfigFileExists = true;
+    } catch {
+    }
+    if (!isConfigFileExists) {
+      return defaultMountPoint;
+    }
+    const configContent = await fs5.readFile(configFilePath, { encoding: "utf8" });
+    const configMountPoint = /(?<!#.*)root\s*=\s*(?<mountPoint>.*)/g.exec(configContent);
+    if (!configMountPoint) {
+      return defaultMountPoint;
+    }
+    mountPoint = configMountPoint.groups.mountPoint.trim();
+    mountPoint = mountPoint.endsWith("/") ? mountPoint : `${mountPoint}/`;
+    return mountPoint;
+  };
+})();
+var powerShellPathFromWsl = async () => {
+  const mountPoint = await wslDrivesMountPoint();
+  return `${mountPoint}c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe`;
+};
+var powerShellPath = async () => {
+  if (is_wsl_default) {
+    return powerShellPathFromWsl();
+  }
+  return `${process4.env.SYSTEMROOT || process4.env.windir || String.raw`C:\Windows`}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+};
+
+// node_modules/define-lazy-prop/index.js
+function defineLazyProperty(object3, propertyName, valueGetter) {
+  const define = (value) => Object.defineProperty(object3, propertyName, { value, enumerable: true, writable: true });
+  Object.defineProperty(object3, propertyName, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      const result = valueGetter();
+      define(result);
+      return result;
+    },
+    set(value) {
+      define(value);
+    }
+  });
+  return object3;
+}
+
+// node_modules/default-browser/index.js
+import { promisify as promisify4 } from "node:util";
+import process7 from "node:process";
+import { execFile as execFile4 } from "node:child_process";
+
+// node_modules/default-browser-id/index.js
+import { promisify } from "node:util";
+import process5 from "node:process";
+import { execFile } from "node:child_process";
+var execFileAsync = promisify(execFile);
+async function defaultBrowserId() {
+  if (process5.platform !== "darwin") {
+    throw new Error("macOS only");
+  }
+  const { stdout } = await execFileAsync("defaults", ["read", "com.apple.LaunchServices/com.apple.launchservices.secure", "LSHandlers"]);
+  const match = /LSHandlerRoleAll = "(?!-)(?<id>[^"]+?)";\s+?LSHandlerURLScheme = (?:http|https);/.exec(stdout);
+  const browserId = match?.groups.id ?? "com.apple.Safari";
+  if (browserId === "com.apple.safari") {
+    return "com.apple.Safari";
+  }
+  return browserId;
+}
+
+// node_modules/run-applescript/index.js
+import process6 from "node:process";
+import { promisify as promisify2 } from "node:util";
+import { execFile as execFile2, execFileSync } from "node:child_process";
+var execFileAsync2 = promisify2(execFile2);
+async function runAppleScript(script, { humanReadableOutput = true, signal } = {}) {
+  if (process6.platform !== "darwin") {
+    throw new Error("macOS only");
+  }
+  const outputArguments = humanReadableOutput ? [] : ["-ss"];
+  const execOptions = {};
+  if (signal) {
+    execOptions.signal = signal;
+  }
+  const { stdout } = await execFileAsync2("osascript", ["-e", script, outputArguments], execOptions);
+  return stdout.trim();
+}
+
+// node_modules/bundle-name/index.js
+async function bundleName(bundleId) {
+  return runAppleScript(`tell application "Finder" to set app_path to application file id "${bundleId}" as string
+tell application "System Events" to get value of property list item "CFBundleName" of property list file (app_path & ":Contents:Info.plist")`);
+}
+
+// node_modules/default-browser/windows.js
+import { promisify as promisify3 } from "node:util";
+import { execFile as execFile3 } from "node:child_process";
+var execFileAsync3 = promisify3(execFile3);
+var windowsBrowserProgIds = {
+  MSEdgeHTM: { name: "Edge", id: "com.microsoft.edge" },
+  // The missing `L` is correct.
+  MSEdgeBHTML: { name: "Edge Beta", id: "com.microsoft.edge.beta" },
+  MSEdgeDHTML: { name: "Edge Dev", id: "com.microsoft.edge.dev" },
+  AppXq0fevzme2pys62n3e0fbqa7peapykr8v: { name: "Edge", id: "com.microsoft.edge.old" },
+  ChromeHTML: { name: "Chrome", id: "com.google.chrome" },
+  ChromeBHTML: { name: "Chrome Beta", id: "com.google.chrome.beta" },
+  ChromeDHTML: { name: "Chrome Dev", id: "com.google.chrome.dev" },
+  ChromiumHTM: { name: "Chromium", id: "org.chromium.Chromium" },
+  BraveHTML: { name: "Brave", id: "com.brave.Browser" },
+  BraveBHTML: { name: "Brave Beta", id: "com.brave.Browser.beta" },
+  BraveDHTML: { name: "Brave Dev", id: "com.brave.Browser.dev" },
+  BraveSSHTM: { name: "Brave Nightly", id: "com.brave.Browser.nightly" },
+  FirefoxURL: { name: "Firefox", id: "org.mozilla.firefox" },
+  OperaStable: { name: "Opera", id: "com.operasoftware.Opera" },
+  VivaldiHTM: { name: "Vivaldi", id: "com.vivaldi.Vivaldi" },
+  "IE.HTTP": { name: "Internet Explorer", id: "com.microsoft.ie" }
+};
+var _windowsBrowserProgIdMap = new Map(Object.entries(windowsBrowserProgIds));
+var UnknownBrowserError = class extends Error {
+};
+async function defaultBrowser(_execFileAsync = execFileAsync3) {
+  const { stdout } = await _execFileAsync("reg", [
+    "QUERY",
+    " HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice",
+    "/v",
+    "ProgId"
+  ]);
+  const match = /ProgId\s*REG_SZ\s*(?<id>\S+)/.exec(stdout);
+  if (!match) {
+    throw new UnknownBrowserError(`Cannot find Windows browser in stdout: ${JSON.stringify(stdout)}`);
+  }
+  const { id } = match.groups;
+  const dotIndex = id.lastIndexOf(".");
+  const hyphenIndex = id.lastIndexOf("-");
+  const baseIdByDot = dotIndex === -1 ? void 0 : id.slice(0, dotIndex);
+  const baseIdByHyphen = hyphenIndex === -1 ? void 0 : id.slice(0, hyphenIndex);
+  return windowsBrowserProgIds[id] ?? windowsBrowserProgIds[baseIdByDot] ?? windowsBrowserProgIds[baseIdByHyphen] ?? { name: id, id };
+}
+
+// node_modules/default-browser/index.js
+var execFileAsync4 = promisify4(execFile4);
+var titleize = (string3) => string3.toLowerCase().replaceAll(/(?:^|\s|-)\S/g, (x) => x.toUpperCase());
+async function defaultBrowser2() {
+  if (process7.platform === "darwin") {
+    const id = await defaultBrowserId();
+    const name = await bundleName(id);
+    return { name, id };
+  }
+  if (process7.platform === "linux") {
+    const { stdout } = await execFileAsync4("xdg-mime", ["query", "default", "x-scheme-handler/http"]);
+    const id = stdout.trim();
+    const name = titleize(id.replace(/.desktop$/, "").replace("-", " "));
+    return { name, id };
+  }
+  if (process7.platform === "win32") {
+    return defaultBrowser();
+  }
+  throw new Error("Only macOS, Linux, and Windows are supported");
+}
+
+// node_modules/open/index.js
+var execFile5 = promisify5(childProcess.execFile);
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+var localXdgOpenPath = path.join(__dirname, "xdg-open");
+var { platform, arch } = process8;
+async function getWindowsDefaultBrowserFromWsl() {
+  const powershellPath = await powerShellPath();
+  const rawCommand = String.raw`(Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice").ProgId`;
+  const encodedCommand = Buffer2.from(rawCommand, "utf16le").toString("base64");
+  const { stdout } = await execFile5(
+    powershellPath,
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-EncodedCommand",
+      encodedCommand
+    ],
+    { encoding: "utf8" }
+  );
+  const progId = stdout.trim();
+  const browserMap = {
+    ChromeHTML: "com.google.chrome",
+    BraveHTML: "com.brave.Browser",
+    MSEdgeHTM: "com.microsoft.edge",
+    FirefoxURL: "org.mozilla.firefox"
+  };
+  return browserMap[progId] ? { id: browserMap[progId] } : {};
+}
+var pTryEach = async (array2, mapper) => {
+  let latestError;
+  for (const item of array2) {
+    try {
+      return await mapper(item);
+    } catch (error2) {
+      latestError = error2;
+    }
+  }
+  throw latestError;
+};
+var baseOpen = async (options) => {
+  options = {
+    wait: false,
+    background: false,
+    newInstance: false,
+    allowNonzeroExitCode: false,
+    ...options
+  };
+  if (Array.isArray(options.app)) {
+    return pTryEach(options.app, (singleApp) => baseOpen({
+      ...options,
+      app: singleApp
+    }));
+  }
+  let { name: app, arguments: appArguments = [] } = options.app ?? {};
+  appArguments = [...appArguments];
+  if (Array.isArray(app)) {
+    return pTryEach(app, (appName) => baseOpen({
+      ...options,
+      app: {
+        name: appName,
+        arguments: appArguments
+      }
+    }));
+  }
+  if (app === "browser" || app === "browserPrivate") {
+    const ids = {
+      "com.google.chrome": "chrome",
+      "google-chrome.desktop": "chrome",
+      "com.brave.Browser": "brave",
+      "org.mozilla.firefox": "firefox",
+      "firefox.desktop": "firefox",
+      "com.microsoft.msedge": "edge",
+      "com.microsoft.edge": "edge",
+      "com.microsoft.edgemac": "edge",
+      "microsoft-edge.desktop": "edge"
+    };
+    const flags = {
+      chrome: "--incognito",
+      brave: "--incognito",
+      firefox: "--private-window",
+      edge: "--inPrivate"
+    };
+    const browser = is_wsl_default ? await getWindowsDefaultBrowserFromWsl() : await defaultBrowser2();
+    if (browser.id in ids) {
+      const browserName = ids[browser.id];
+      if (app === "browserPrivate") {
+        appArguments.push(flags[browserName]);
+      }
+      return baseOpen({
+        ...options,
+        app: {
+          name: apps[browserName],
+          arguments: appArguments
+        }
+      });
+    }
+    throw new Error(`${browser.name} is not supported as a default browser`);
+  }
+  let command;
+  const cliArguments = [];
+  const childProcessOptions = {};
+  if (platform === "darwin") {
+    command = "open";
+    if (options.wait) {
+      cliArguments.push("--wait-apps");
+    }
+    if (options.background) {
+      cliArguments.push("--background");
+    }
+    if (options.newInstance) {
+      cliArguments.push("--new");
+    }
+    if (app) {
+      cliArguments.push("-a", app);
+    }
+  } else if (platform === "win32" || is_wsl_default && !isInsideContainer() && !app) {
+    command = await powerShellPath();
+    cliArguments.push(
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-EncodedCommand"
+    );
+    if (!is_wsl_default) {
+      childProcessOptions.windowsVerbatimArguments = true;
+    }
+    const encodedArguments = ["Start"];
+    if (options.wait) {
+      encodedArguments.push("-Wait");
+    }
+    if (app) {
+      encodedArguments.push(`"\`"${app}\`""`);
+      if (options.target) {
+        appArguments.push(options.target);
+      }
+    } else if (options.target) {
+      encodedArguments.push(`"${options.target}"`);
+    }
+    if (appArguments.length > 0) {
+      appArguments = appArguments.map((argument) => `"\`"${argument}\`""`);
+      encodedArguments.push("-ArgumentList", appArguments.join(","));
+    }
+    options.target = Buffer2.from(encodedArguments.join(" "), "utf16le").toString("base64");
+  } else {
+    if (app) {
+      command = app;
+    } else {
+      const isBundled = !__dirname || __dirname === "/";
+      let exeLocalXdgOpen = false;
+      try {
+        await fs6.access(localXdgOpenPath, fsConstants2.X_OK);
+        exeLocalXdgOpen = true;
+      } catch {
+      }
+      const useSystemXdgOpen = process8.versions.electron ?? (platform === "android" || isBundled || !exeLocalXdgOpen);
+      command = useSystemXdgOpen ? "xdg-open" : localXdgOpenPath;
+    }
+    if (appArguments.length > 0) {
+      cliArguments.push(...appArguments);
+    }
+    if (!options.wait) {
+      childProcessOptions.stdio = "ignore";
+      childProcessOptions.detached = true;
+    }
+  }
+  if (platform === "darwin" && appArguments.length > 0) {
+    cliArguments.push("--args", ...appArguments);
+  }
+  if (options.target) {
+    cliArguments.push(options.target);
+  }
+  const subprocess = childProcess.spawn(command, cliArguments, childProcessOptions);
+  if (options.wait) {
+    return new Promise((resolve, reject) => {
+      subprocess.once("error", reject);
+      subprocess.once("close", (exitCode) => {
+        if (!options.allowNonzeroExitCode && exitCode > 0) {
+          reject(new Error(`Exited with code ${exitCode}`));
+          return;
+        }
+        resolve(subprocess);
+      });
+    });
+  }
+  subprocess.unref();
+  return subprocess;
+};
+var open = (target, options) => {
+  if (typeof target !== "string") {
+    throw new TypeError("Expected a `target`");
+  }
+  return baseOpen({
+    ...options,
+    target
+  });
+};
+function detectArchBinary(binary) {
+  if (typeof binary === "string" || Array.isArray(binary)) {
+    return binary;
+  }
+  const { [arch]: archBinary } = binary;
+  if (!archBinary) {
+    throw new Error(`${arch} is not supported`);
+  }
+  return archBinary;
+}
+function detectPlatformBinary({ [platform]: platformBinary }, { wsl }) {
+  if (wsl && is_wsl_default) {
+    return detectArchBinary(wsl);
+  }
+  if (!platformBinary) {
+    throw new Error(`${platform} is not supported`);
+  }
+  return detectArchBinary(platformBinary);
+}
+var apps = {};
+defineLazyProperty(apps, "chrome", () => detectPlatformBinary({
+  darwin: "google chrome",
+  win32: "chrome",
+  linux: ["google-chrome", "google-chrome-stable", "chromium"]
+}, {
+  wsl: {
+    ia32: "/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+    x64: ["/mnt/c/Program Files/Google/Chrome/Application/chrome.exe", "/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe"]
+  }
+}));
+defineLazyProperty(apps, "brave", () => detectPlatformBinary({
+  darwin: "brave browser",
+  win32: "brave",
+  linux: ["brave-browser", "brave"]
+}, {
+  wsl: {
+    ia32: "/mnt/c/Program Files (x86)/BraveSoftware/Brave-Browser/Application/brave.exe",
+    x64: ["/mnt/c/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe", "/mnt/c/Program Files (x86)/BraveSoftware/Brave-Browser/Application/brave.exe"]
+  }
+}));
+defineLazyProperty(apps, "firefox", () => detectPlatformBinary({
+  darwin: "firefox",
+  win32: String.raw`C:\Program Files\Mozilla Firefox\firefox.exe`,
+  linux: "firefox"
+}, {
+  wsl: "/mnt/c/Program Files/Mozilla Firefox/firefox.exe"
+}));
+defineLazyProperty(apps, "edge", () => detectPlatformBinary({
+  darwin: "microsoft edge",
+  win32: "msedge",
+  linux: ["microsoft-edge", "microsoft-edge-dev"]
+}, {
+  wsl: "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+}));
+defineLazyProperty(apps, "browser", () => "browser");
+defineLazyProperty(apps, "browserPrivate", () => "browserPrivate");
+var open_default = open;
+
+// dist/oauth/discovery.js
+var cache = /* @__PURE__ */ new Map();
+var TTL_MS = 5 * 60 * 1e3;
+async function discoverAuthServer(instance) {
+  const cached2 = cache.get(instance);
+  if (cached2 && Date.now() - cached2.fetchedAt < TTL_MS) {
+    return cached2.metadata;
+  }
+  const url = `https://${instance}/.well-known/openid-configuration`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) {
+    throw new Error(`OIDC discovery failed: HTTP ${res.status} from ${url}`);
+  }
+  const metadata = await res.json();
+  if (!metadata.authorization_endpoint || !metadata.token_endpoint) {
+    throw new Error(`OIDC discovery at ${url} missing authorization_endpoint or token_endpoint`);
+  }
+  cache.set(instance, { metadata, fetchedAt: Date.now() });
+  return metadata;
+}
+
+// dist/oauth/pkce.js
+import { randomBytes, createHash } from "node:crypto";
+function base64url2(buf) {
+  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function generatePkce() {
+  const verifier = base64url2(randomBytes(32));
+  const challenge = base64url2(createHash("sha256").update(verifier).digest());
+  return { verifier, challenge };
+}
+function generateState() {
+  return base64url2(randomBytes(16));
+}
+
+// dist/oauth/loopback.js
+import { createServer } from "node:http";
+async function startLoopback(timeoutMs = 5 * 60 * 1e3) {
+  let resolveResult;
+  let rejectResult;
+  const resultPromise = new Promise((resolve, reject) => {
+    resolveResult = resolve;
+    rejectResult = reject;
+  });
+  const server2 = createServer((req, res) => {
+    if (!req.url)
+      return;
+    const url = new URL(req.url, "http://127.0.0.1");
+    if (url.pathname !== "/callback") {
+      res.writeHead(404).end();
+      return;
+    }
+    const error2 = url.searchParams.get("error");
+    const code = url.searchParams.get("code");
+    const state = url.searchParams.get("state");
+    if (error2) {
+      respondPage(res, `Authorization failed: ${error2}`);
+      rejectResult(new Error(`Authorization error: ${error2} \u2014 ${url.searchParams.get("error_description") ?? ""}`));
+    } else if (code && state) {
+      respondPage(res, "Authorized. You can close this tab and return to Claude.");
+      resolveResult({ code, state });
+    } else {
+      respondPage(res, "Invalid callback.");
+      rejectResult(new Error("Callback missing code or state"));
+    }
+    setTimeout(() => server2.close(), 100);
+  });
+  await new Promise((resolve, reject) => {
+    server2.once("error", reject);
+    server2.listen(0, "127.0.0.1", resolve);
+  });
+  const port = server2.address().port;
+  const redirectUri = `http://127.0.0.1:${port}/callback`;
+  const timeout = setTimeout(() => {
+    server2.close();
+    rejectResult(new Error(`OAuth timeout \u2014 no callback received within ${timeoutMs}ms`));
+  }, timeoutMs);
+  resultPromise.finally(() => clearTimeout(timeout)).catch(() => {
+  });
+  return { redirectUri, done: resultPromise };
+}
+function respondPage(res, message) {
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Enneo</title>
+<style>body{font-family:system-ui,sans-serif;max-width:600px;margin:8em auto;padding:2em;text-align:center}</style>
+</head><body><h1>${message}</h1></body></html>`;
+  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  res.end(html);
+}
+
+// dist/oauth/client.js
+var CLIENT_ID = "enneo-claude-plugin";
+var SCOPES = "openid profile email";
+async function getAccessToken(instance) {
+  const env = await loadEnv();
+  if (env.instance === instance && env.access_token && !isExpired(env.expires_at)) {
+    return env.access_token;
+  }
+  if (env.instance === instance && env.refresh_token) {
+    try {
+      const refreshed = await refresh(instance, env.refresh_token);
+      await updateEnv({
+        instance,
+        access_token: refreshed.access_token,
+        refresh_token: refreshed.refresh_token ?? env.refresh_token,
+        expires_at: refreshed.expires_at
+      });
+      return refreshed.access_token;
+    } catch (err) {
+      console.error(`[enneo-mcp] refresh failed, starting full flow: ${err}`);
+    }
+  }
+  const tokens = await authorize(instance);
+  await updateEnv({
+    instance,
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+    expires_at: tokens.expires_at
+  });
+  return tokens.access_token;
+}
+async function refresh(instance, refreshToken) {
+  const metadata = await discoverAuthServer(instance);
+  const body = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: CLIENT_ID
+  });
+  const res = await fetch(metadata.token_endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body
+  });
+  if (!res.ok) {
+    throw new Error(`Refresh failed: ${res.status} ${await res.text()}`);
+  }
+  return normalizeTokens(await res.json(), refreshToken);
+}
+async function authorize(instance) {
+  const metadata = await discoverAuthServer(instance);
+  const { verifier, challenge } = generatePkce();
+  const state = generateState();
+  const { redirectUri, done } = await startLoopback();
+  const authUrl = new URL(metadata.authorization_endpoint);
+  authUrl.searchParams.set("client_id", CLIENT_ID);
+  authUrl.searchParams.set("redirect_uri", redirectUri);
+  authUrl.searchParams.set("response_type", "code");
+  authUrl.searchParams.set("state", state);
+  authUrl.searchParams.set("scope", SCOPES);
+  authUrl.searchParams.set("code_challenge", challenge);
+  authUrl.searchParams.set("code_challenge_method", "S256");
+  console.error(`[enneo-mcp] opening browser: ${authUrl.toString()}`);
+  open_default(authUrl.toString()).catch((err) => {
+    console.error(`[enneo-mcp] could not open browser automatically: ${err}`);
+    console.error(`[enneo-mcp] open manually: ${authUrl.toString()}`);
+  });
+  const { code, state: returnedState } = await done;
+  if (returnedState !== state) {
+    throw new Error("OAuth state mismatch \u2014 possible CSRF");
+  }
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: redirectUri,
+    client_id: CLIENT_ID,
+    code_verifier: verifier
+  });
+  const res = await fetch(metadata.token_endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body
+  });
+  if (!res.ok) {
+    throw new Error(`Token exchange failed: ${res.status} ${await res.text()}`);
+  }
+  return normalizeTokens(await res.json());
+}
+function normalizeTokens(raw, fallbackRefresh) {
+  const now = Math.floor(Date.now() / 1e3);
+  const expiresIn = typeof raw.expires_in === "number" ? raw.expires_in : 3600;
+  return {
+    access_token: raw.access_token,
+    refresh_token: raw.refresh_token ?? fallbackRefresh,
+    expires_at: now + expiresIn
+  };
+}
 
 // dist/api.js
 async function getInstanceOrThrow() {
@@ -14401,13 +15106,10 @@ async function getInstanceOrThrow() {
   }
   return instance;
 }
-async function enneoApi(path, opts = {}) {
+async function enneoApi(path2, opts = {}) {
   const instance = await getInstanceOrThrow();
-  const { access_token: token } = await loadEnv();
-  if (!token) {
-    throw new Error(`Set ENNEO_TOKEN in ~/.enneo/env to your existing API key from https://${instance}/settings/profile (Login \u2192 API keys).`);
-  }
-  const url = new URL(`https://${instance}/api/mind${path}`);
+  const token = await getAccessToken(instance);
+  const url = new URL(`https://${instance}/api/mind${path2}`);
   if (opts.query) {
     for (const [k, v] of Object.entries(opts.query)) {
       if (v === void 0)
@@ -14427,7 +15129,7 @@ async function enneoApi(path, opts = {}) {
   const res = await fetch(url, init);
   const text2 = await res.text();
   if (!res.ok) {
-    throw new Error(`${init.method} ${path} -> ${res.status}: ${text2.slice(0, 500)}`);
+    throw new Error(`${init.method} ${path2} -> ${res.status}: ${text2.slice(0, 500)}`);
   }
   if (!text2)
     return {};
