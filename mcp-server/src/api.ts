@@ -6,13 +6,23 @@ interface ApiOptions {
   body?: unknown;
 }
 
-export async function enneoApi<T = unknown>(path: string, opts: ApiOptions = {}): Promise<T> {
-  const { instance, access_token: token } = await loadEnv();
+async function getInstanceOrThrow(): Promise<string> {
+  const { instance } = await loadEnv();
   if (!instance) {
     throw new Error(
       "Enneo instance not configured. Call the `enneo_configure` tool first with e.g. {\"instance\": \"demo.enneo.ai\"}.",
     );
   }
+  return instance;
+}
+
+/**
+ * Make an authenticated call to the Enneo Mind API.
+ * Uses the API key already saved in ~/.enneo/env.
+ */
+export async function enneoApi<T = unknown>(path: string, opts: ApiOptions = {}): Promise<T> {
+  const instance = await getInstanceOrThrow();
+  const { access_token: token } = await loadEnv();
   if (!token) {
     throw new Error(`Set ENNEO_TOKEN in ~/.enneo/env to your existing API key from https://${instance}/settings/profile (Login → API keys).`);
   }

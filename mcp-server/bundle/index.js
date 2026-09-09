@@ -14394,11 +14394,16 @@ Set ENNEO_TOKEN there to an existing API key from Profile Settings \u2192 Login 
 };
 
 // dist/api.js
-async function enneoApi(path, opts = {}) {
-  const { instance, access_token: token } = await loadEnv();
+async function getInstanceOrThrow() {
+  const { instance } = await loadEnv();
   if (!instance) {
     throw new Error('Enneo instance not configured. Call the `enneo_configure` tool first with e.g. {"instance": "demo.enneo.ai"}.');
   }
+  return instance;
+}
+async function enneoApi(path, opts = {}) {
+  const instance = await getInstanceOrThrow();
+  const { access_token: token } = await loadEnv();
   if (!token) {
     throw new Error(`Set ENNEO_TOKEN in ~/.enneo/env to your existing API key from https://${instance}/settings/profile (Login \u2192 API keys).`);
   }
@@ -14436,7 +14441,7 @@ async function enneoApi(path, opts = {}) {
 // dist/tools/profile.js
 var profileMe = {
   name: "enneo_profile_me",
-  description: "Get the current user's profile: `id`, `permissions`, the resolved `settings` object (skills, backlog tag restrictions, role, routing status) and the tickets they currently hold open. The response carries no email address. Useful for verifying the connection and identity.",
+  description: "Get the current user's profile: `id`, `permissions`, the resolved `settings` object (skills, backlog tag restrictions, role, routing status) and the tickets they currently hold open. The response carries no email address. Useful for verifying the connection and identity after OAuth login.",
   inputSchema: { type: "object", properties: {} },
   handler: async () => {
     const profile = await enneoApi("/profile");

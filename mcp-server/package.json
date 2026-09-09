@@ -1,7 +1,7 @@
 {
   "name": "@enneo/claude-mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for the Enneo platform — exposes ticket, AI agent, customer, and configuration tools using a saved profile API key.",
+  "description": "MCP server for the Enneo platform — exposes ticket, AI agent, customer, and configuration tools with OAuth-authenticated access.",
   "license": "UNLICENSED",
   "type": "module",
   "bin": {
