@@ -1,7 +1,7 @@
 {
   "name": "@enneo/claude-mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for the Enneo platform with profile API key authentication.",
+  "description": "MCP server for the Enneo platform — exposes ticket, AI agent, customer, and configuration tools using a saved profile API key.",
   "license": "UNLICENSED",
   "type": "module",
   "bin": {
@@ -9,15 +9,15 @@
   },
   "files": ["bundle"],
   "scripts": {
-    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
+    "build": "tsc",
     "bundle": "npm run build && esbuild dist/index.js --bundle --platform=node --format=esm --target=node18 --outfile=bundle/index.js",
-    "test": "npm run bundle && node --test test/*.test.mjs",
     "dev": "tsc --watch",
     "start": "node bundle/index.js",
     "prepare": "npm run bundle"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "open": "^10.1.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

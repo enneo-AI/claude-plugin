@@ -10,10 +10,10 @@ Use when the user reports an issue and needs help debugging. Step-by-step playbo
 
 ## Prerequisites
 
-Prefer MCP tools (`enneo_ticket_get`, `enneo_ticket_search`, `enneo_profile_me`, `enneo_configure`) for investigation. The curl examples below are fallback references — native tools and curl share the saved instance and profile API key in `~/.enneo/env`. If setup is missing, follow the `browser-jwt` skill to enter it locally. Source it without displaying its contents:
+Prefer MCP tools (`enneo_ticket_get`, `enneo_ticket_search`, `enneo_profile_me`, `enneo_configure`) for investigation. The curl examples below are fallback references — the MCP server writes credentials to `~/.enneo/env`, so:
 
 ```bash
-. ~/.enneo/env   # exports ENNEO_INSTANCE, ENNEO_TOKEN
+. ~/.enneo/env   # exports ENNEO_INSTANCE, ENNEO_TOKEN, ENNEO_REFRESH_TOKEN, ENNEO_TOKEN_EXPIRES_AT
 BASE="https://${ENNEO_INSTANCE}/api/mind"
 AUTH="Authorization: Bearer ${ENNEO_TOKEN}"
 ```

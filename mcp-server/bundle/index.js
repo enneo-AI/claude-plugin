@@ -14286,20 +14286,14 @@ var StdioServerTransport = class {
 import { promises as fs } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { randomUUID } from "node:crypto";
 var ENNEO_DIR = join(homedir(), ".enneo");
 var ENV_FILE = join(ENNEO_DIR, "env");
 var KEY_MAP = {
   instance: "ENNEO_INSTANCE",
-  access_token: "ENNEO_TOKEN"
+  access_token: "ENNEO_TOKEN",
+  refresh_token: "ENNEO_REFRESH_TOKEN",
+  expires_at: "ENNEO_TOKEN_EXPIRES_AT"
 };
-function normalizeInstance(value) {
-  const instance = value.trim().replace(/^https?:\/\//i, "").replace(/\/$/, "").toLowerCase();
-  if (!/^[a-z0-9.-]+$/.test(instance)) {
-    throw new Error("Invalid instance hostname. Use a hostname such as demo.enneo.ai, without a path or credentials.");
-  }
-  return instance;
-}
 async function loadEnv() {
   let raw;
   try {
@@ -14318,10 +14312,15 @@ async function loadEnv() {
     const value = m[2] ?? m[3] ?? m[4] ?? "";
     values[key] = value;
   }
-  return {
+  const env = {
     instance: values[KEY_MAP.instance] || void 0,
-    access_token: values[KEY_MAP.access_token] || void 0
+    access_token: values[KEY_MAP.access_token] || void 0,
+    refresh_token: values[KEY_MAP.refresh_token] || void 0
   };
+  const exp = values[KEY_MAP.expires_at];
+  if (exp)
+    env.expires_at = Number(exp);
+  return env;
 }
 async function saveEnv(env) {
   await fs.mkdir(ENNEO_DIR, { recursive: true, mode: 448 });
@@ -14330,14 +14329,27 @@ async function saveEnv(env) {
     lines.push(`export ${KEY_MAP.instance}="${shellEscape(env.instance)}"`);
   if (env.access_token)
     lines.push(`export ${KEY_MAP.access_token}="${shellEscape(env.access_token)}"`);
+  if (env.refresh_token)
+    lines.push(`export ${KEY_MAP.refresh_token}="${shellEscape(env.refresh_token)}"`);
+  if (env.expires_at)
+    lines.push(`export ${KEY_MAP.expires_at}="${env.expires_at}"`);
   const content = lines.join("\n") + "\n";
-  const tmp = `${ENV_FILE}.tmp-${randomUUID()}`;
-  try {
-    await fs.writeFile(tmp, content, { mode: 384 });
-    await fs.rename(tmp, ENV_FILE);
-  } finally {
-    await fs.rm(tmp, { force: true });
-  }
+  const tmp = `${ENV_FILE}.tmp-${process.pid}`;
+  await fs.writeFile(tmp, content, { mode: 384 });
+  await fs.rename(tmp, ENV_FILE);
+}
+async function updateEnv(patch) {
+  const current = await loadEnv();
+  const merged = { ...current, ...patch };
+  await saveEnv(merged);
+  return merged;
+}
+async function clearTokens() {
+  const current = await loadEnv();
+  delete current.access_token;
+  delete current.refresh_token;
+  delete current.expires_at;
+  await saveEnv(current);
 }
 function shellEscape(value) {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\$/g, "\\$").replace(/`/g, "\\`");
@@ -14346,7 +14358,7 @@ function shellEscape(value) {
 // dist/tools/configure.js
 var configure = {
   name: "enneo_configure",
-  description: "Configure the active Enneo instance. Reuses the profile API key saved in ~/.enneo/env for this instance. Switching instances clears the saved key; enter the matching key locally in that file before making API calls.",
+  description: "Configure the Enneo instance this plugin connects to. Run this before any other tool on first use, or when switching environments.",
   inputSchema: {
     type: "object",
     properties: {
@@ -14356,27 +14368,28 @@ var configure = {
       },
       reset: {
         type: "boolean",
-        description: "If true, clear the locally saved API key. This does not revoke the key in Enneo.",
+        description: "If true, also clear any cached tokens for this instance.",
         default: false
       }
     },
     required: ["instance"]
   },
   handler: async (args) => {
-    if (typeof args.instance !== "string")
-      throw new Error("An instance hostname is required.");
-    const instance = normalizeInstance(args.instance);
-    const current = await loadEnv();
-    let sameInstance = false;
-    try {
-      sameInstance = !!current.instance && normalizeInstance(current.instance) === instance;
-    } catch {
+    const instance = String(args.instance).replace(/^https?:\/\//, "").replace(/\/$/, "");
+    if (!/^[a-z0-9.-]+$/i.test(instance)) {
+      throw new Error(`Invalid instance hostname: ${instance}`);
     }
-    const token = !args.reset && sameInstance ? current.access_token : void 0;
-    await saveEnv({ instance, access_token: token });
-    const note = token ? "Saved API key retained." : "No API key saved. Open Profile Settings \u2192 Login \u2192 API keys and enter a matching key locally as ENNEO_TOKEN in ~/.enneo/env. Do not paste the key into chat.";
-    return text(`Configured instance: ${instance}. ${note}
-Credentials: ~/.enneo/env (mode 600).`);
+    const current = await loadEnv();
+    const instanceChanged = current.instance && current.instance !== instance;
+    if (args.reset || instanceChanged) {
+      await clearTokens();
+    }
+    await updateEnv({ instance });
+    const note = instanceChanged ? `Instance changed from ${current.instance} \u2192 ${instance}; cached tokens cleared.` : `Instance: ${instance}`;
+    return text(`Configured. ${note}
+Credentials are stored at ~/.enneo/env (mode 600).
+
+Set ENNEO_TOKEN there to an existing API key from Profile Settings \u2192 Login \u2192 API keys.`);
   }
 };
 
@@ -14386,11 +14399,10 @@ async function enneoApi(path, opts = {}) {
   if (!instance) {
     throw new Error('Enneo instance not configured. Call the `enneo_configure` tool first with e.g. {"instance": "demo.enneo.ai"}.');
   }
-  const hostname2 = normalizeInstance(instance);
   if (!token) {
-    throw new Error(`No API key saved for ${hostname2}. In Enneo, open Profile Settings \u2192 Login \u2192 API keys. Reuse a saved key for this instance, or create one if needed, then enter it locally as ENNEO_TOKEN in ~/.enneo/env alongside ENNEO_INSTANCE="${hostname2}" (mode 600). Do not paste the key into chat.`);
+    throw new Error(`Set ENNEO_TOKEN in ~/.enneo/env to your existing API key from https://${instance}/settings/profile (Login \u2192 API keys).`);
   }
-  const url = new URL(`https://${hostname2}/api/mind${path}`);
+  const url = new URL(`https://${instance}/api/mind${path}`);
   if (opts.query) {
     for (const [k, v] of Object.entries(opts.query)) {
       if (v === void 0)
@@ -14409,9 +14421,6 @@ async function enneoApi(path, opts = {}) {
   }
   const res = await fetch(url, init);
   const text2 = await res.text();
-  if (res.status === 401) {
-    throw new Error(`Enneo rejected the saved API key for ${hostname2} (401). Check Profile Settings \u2192 Login \u2192 API keys and update ENNEO_TOKEN in ~/.enneo/env locally if the key has expired or been revoked.`);
-  }
   if (!res.ok) {
     throw new Error(`${init.method} ${path} -> ${res.status}: ${text2.slice(0, 500)}`);
   }
@@ -14427,7 +14436,7 @@ async function enneoApi(path, opts = {}) {
 // dist/tools/profile.js
 var profileMe = {
   name: "enneo_profile_me",
-  description: "Get the current user's profile: `id`, `permissions`, the resolved `settings` object (skills, backlog tag restrictions, role, routing status) and the tickets they currently hold open. The response carries no email address. Useful for verifying the connection and identity with the saved profile API key.",
+  description: "Get the current user's profile: `id`, `permissions`, the resolved `settings` object (skills, backlog tag restrictions, role, routing status) and the tickets they currently hold open. The response carries no email address. Useful for verifying the connection and identity.",
   inputSchema: { type: "object", properties: {} },
   handler: async () => {
     const profile = await enneoApi("/profile");

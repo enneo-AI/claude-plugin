@@ -15,7 +15,7 @@ Use when the user wants to investigate, search, create, update, or manage ticket
 | `enneo_ticket_get` | Ticket by ID — body, tags, attachments, reply template, customer and intents. Pass `refresh: true` to re-run AI. |
 | `enneo_ticket_search` | Search by filters (status, channel, tags, dates, etc.). Returns compact rows. |
 
-Use these in preference to raw curl. They use the saved profile API key and return typed JSON.
+Use these in preference to raw curl. They handle OAuth transparently and return typed JSON.
 
 **Caveat:** `enneo_ticket_get` counts as a human ticket-open — it records `workedOnBy`, starts time
 tracking and can trigger an ERP contract refresh, because Mind defaults `viewing` to `true` and the
@@ -25,10 +25,10 @@ hides nothing and writes nothing. Conversations are not in the result either way
 
 ## curl Reference
 
-Native tools and curl share the instance and profile API key in `~/.enneo/env`. Reuse the saved key; if setup is missing, follow the `browser-jwt` skill to enter it locally. Source the file without displaying its contents:
+The MCP server writes all credentials (instance + access/refresh tokens) to `~/.enneo/env`. Source it to use curl directly:
 
 ```bash
-. ~/.enneo/env   # exports ENNEO_INSTANCE, ENNEO_TOKEN
+. ~/.enneo/env   # exports ENNEO_INSTANCE, ENNEO_TOKEN, ENNEO_REFRESH_TOKEN, ENNEO_TOKEN_EXPIRES_AT
 BASE="https://${ENNEO_INSTANCE}/api/mind"
 AUTH="Authorization: Bearer ${ENNEO_TOKEN}"
 ```
