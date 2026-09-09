@@ -4,7 +4,7 @@ MCP server bundled with the Enneo Claude Code plugin. Exposes Enneo platform too
 
 ## Architecture
 
-- **Local stdio MCP server** — Claude Code spawns it via `npx`, talks to it over stdio (no auth between Claude and the server)
+- **Local stdio MCP server** — Claude Code spawns `node` on the committed bundle, talks to it over stdio (no auth between Claude and the server)
 - **OAuth 2.0 + PKCE** — the server handles auth directly with the Enneo auth service on behalf of the user
 - **Loopback redirect** — picks a free port at runtime, opens the user's browser, captures the callback
 - **Token cache** — stored in `~/.enneo/env`, a shell-sourceable file (mode 600). This is deliberately the same file the plugin's skills reference for ad-hoc curl, so the MCP server and raw shell usage share one source of truth. Format:
@@ -20,7 +20,7 @@ MCP server bundled with the Enneo Claude Code plugin. Exposes Enneo platform too
 
 Users configure the plugin once, then all tool calls Just Work:
 
-1. Install the plugin (adds `.mcp.json` pointing at `npx -y @enneo/mcp-server@latest`)
+1. Install the plugin (adds `.mcp.json` pointing at `${CLAUDE_PLUGIN_ROOT}/mcp-server/bundle/index.js`)
 2. On first tool call, run `enneo_configure` with the instance URL (e.g. `demo.enneo.ai`)
 3. The server opens a browser for OAuth. User logs in → tokens cached.
 4. All subsequent tool calls use the cached tokens, refreshing silently as needed.
@@ -59,11 +59,19 @@ More tools will be added, matching the capabilities documented in the plugin's s
 
 ```bash
 cd mcp-server
-npm install
-npm run build
-npm start   # runs on stdio — for manual testing, use an MCP client
+npm install          # `prepare` rebuilds the bundle for you
+npm run bundle       # tsc -> dist/, then esbuild -> bundle/index.js
+npm start            # runs on stdio — for manual testing, use an MCP client
 ```
+
+`dist/` is a build intermediate and is gitignored. **`bundle/index.js` is the shipped
+artifact and must be committed** — commit it whenever `src/` or a dependency changes.
+`npm install` regenerates it, so a stale bundle shows up in `git status`.
 
 ## Distribution
 
-Published to npm as `@enneo/mcp-server`. Plugin's `.mcp.json` pins to `@latest` so users automatically get updates.
+Shipped inside the plugin as a single self-contained file, not published to npm. A
+marketplace install is a plain git checkout with no `npm install` step, so the server
+cannot rely on `node_modules/` existing at runtime — everything it imports
+(`@modelcontextprotocol/sdk`, `zod`, `open`) is inlined into `bundle/index.js` by
+esbuild. That is also why `.mcp.json` must never point at `dist/`.
